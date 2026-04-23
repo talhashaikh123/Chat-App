@@ -18,23 +18,44 @@ const server = http.createServer(app);
 const PORT = process.env.PORT || 5000;
 const __dirname = path.resolve();
 
+// ✅ Allowed origins
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://chat-app-cn76.vercel.app", // ← REPLACE with your real Vercel URL
+];
+
+// ✅ Middlewares
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 app.use(cookieParser());
 
+// ✅ CORS (final)
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: function (origin, callback) {
+      if (
+        !origin || // for Postman / server-to-server
+        allowedOrigins.includes(origin) ||
+        origin.endsWith(".vercel.app") // allow preview deployments
+      ) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     credentials: true,
   })
 );
 
+// ✅ Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/messages", messageRoutes);
 
-// Initialize socket AFTER creating server
+// ✅ Socket
 initSocket(server);
 
+// ❌ Not needed (frontend is on Vercel)
+// Keep it commented
 // if (process.env.NODE_ENV === "production") {
 //   app.use(express.static(path.join(__dirname, "../frontend/dist")));
 //   app.get("*", (_, res) => {
@@ -42,6 +63,7 @@ initSocket(server);
 //   });
 // }
 
+// ✅ Start server
 server.listen(PORT, () => {
   console.log("Server running on port:", PORT);
   connectDB();
