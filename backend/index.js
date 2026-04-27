@@ -54,8 +54,6 @@ app.use("/api/messages", messageRoutes);
 // ✅ Socket
 initSocket(server);
 
-// ❌ Not needed (frontend is on Vercel)
-// Keep it commented
 // if (process.env.NODE_ENV === "production") {
 //   app.use(express.static(path.join(__dirname, "../frontend/dist")));
 //   app.get("*", (_, res) => {
@@ -64,7 +62,16 @@ initSocket(server);
 // }
 
 // ✅ Start server
-server.listen(PORT, () => {
-  console.log("Server running on port:", PORT);
-  connectDB();
-});
+const startServer = async () => {
+  try {
+    await connectDB();
+
+    server.listen(PORT, () => {
+      console.log("Server running on port:", PORT);
+    });
+  } catch (error) {
+    console.log("Failed to start server:", error.message);
+  }
+};
+
+startServer();
