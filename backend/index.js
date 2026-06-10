@@ -34,9 +34,9 @@ app.use(
   cors({
     origin: function (origin, callback) {
       if (
-        !origin || // for Postman / server-to-server
+        !origin ||
         allowedOrigins.includes(origin) ||
-        origin.endsWith(".vercel.app") // allow preview deployments
+        (origin && origin.endsWith(".vercel.app"))
       ) {
         callback(null, true);
       } else {
@@ -46,6 +46,10 @@ app.use(
     credentials: true,
   })
 );
+
+app.get("/", (req, res) => {
+  res.send("Chat App Backend Running");
+});
 
 // ✅ Routes
 app.use("/api/auth", authRoutes);
